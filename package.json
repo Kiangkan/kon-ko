@@ -1,0 +1,17 @@
+{
+  "name": "kon-ko",
+  "private": true,
+  "version": "1.0.0",
+  "main": "bin/ww",
+  "scripts": {
+    "start": "node bin/www",
+    "start:dev": "nodemon bin/www"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "multer": "^1.4.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
