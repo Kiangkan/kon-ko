@@ -10901,22 +10901,28 @@ function Play_arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 
 
+var initUser = {
+  image: {},
+  loaded: false,
+  name: 1
+};
 
 function Play() {
-  var _useState = (0,react.useState)({
-    image: {},
-    loaded: false
-  }),
+  var _useState = (0,react.useState)(_objectSpread({}, initUser)),
       _useState2 = Play_slicedToArray(_useState, 2),
       user = _useState2[0],
-      setUser = _useState2[1]; // useEffect(() => {
+      setUser = _useState2[1];
+
+  var _useState3 = (0,react.useState)({}),
+      _useState4 = Play_slicedToArray(_useState3, 2),
+      auth = _useState4[0],
+      setAuth = _useState4[1]; // useEffect(() => {
   //     console.log(image)
   // }, [image])
 
 
   var login = function login() {
     FB.login(function (response) {
-      console.log(response);
       var userID = response.authResponse.userID;
       var token = response.authResponse.accessToken;
       FB.api('/' + userID, function (user) {
@@ -10984,12 +10990,30 @@ function Play() {
     size: "medium",
     disableElevation: true
   }, "Login With Facebook"), /*#__PURE__*/react.createElement(Button_Button, {
+    color: "primary",
+    variant: "contained",
+    onClick: function onClick() {
+      return FB.logout();
+    },
+    size: "medium",
+    disableElevation: true
+  }, "Logout With Facebook"), /*#__PURE__*/react.createElement(Button_Button, {
     color: "secondary",
     variant: "contained",
     onClick: share,
     size: "medium",
     disableElevation: true
-  }, "Share To FaceBook"));
+  }, "Share To FaceBook"), /*#__PURE__*/react.createElement(Button_Button, {
+    color: "default",
+    variant: "contained",
+    onClick: function onClick() {
+      return FB.getLoginStatus(function (response) {
+        if (response.status == "connected") setAuth(response.authResponse);else setAuth({});
+      });
+    },
+    size: "medium",
+    disableElevation: true
+  }, "GET AUTH"), /*#__PURE__*/react.createElement("pre", null, JSON.stringify(auth, null, 1)));
 }
 
 /* harmony default export */ const pages_Play = (Play);
