@@ -22,6 +22,20 @@ const upload = multer({ storage })
 
 app.use(express.static("assets"));
 app.use(express.static("uploads"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.get("/test", function(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "https://localhost:9000");
+    // res.setHeader("Access-Control-Allow-Headers", "Content-Type")
+    
+    res.json(req.query)
+});
+
+app.get("/image", function(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "https://localhost:9000");
+    res.sendFile(__dirname + "/assets/developer.jpg");
+})
 
 app.get("**", function(req, res) {
     const host = "https://" + req.get("host");
