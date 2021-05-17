@@ -1261,6 +1261,22 @@ if (true) {
 } else {}
 
 
+/***/ }),
+
+/***/ 976:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"global":{"share_to_facebook":"Share To Facebook","swicth_lang":"Switch Langauge"}}');
+
+/***/ }),
+
+/***/ 787:
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"global":{"share_to_facebook":"ចែករំលែកទៅកាន់ Facebook","swicth_lang":"ផ្លាស់ប្ដូរភាសា"}}');
+
 /***/ })
 
 /******/ 	});
@@ -3537,6 +3553,11 @@ function Index() {
 }
 
 /* harmony default export */ const pages_Index = (Index);
+;// CONCATENATED MODULE: ./src/enums/lang.enum.js
+var LANG = {
+  KM: "km",
+  EN: "en"
+};
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/objectWithoutProperties.js
 
 function objectWithoutProperties_objectWithoutProperties(source, excluded) {
@@ -10883,9 +10904,23 @@ var Button = /*#__PURE__*/react.forwardRef(function Button(props, ref) {
 ;// CONCATENATED MODULE: ./src/enums/status.enum.js
 var STATUS = {
   CONNECTED: "connected",
-  UN_KNOWN: "un known"
+  UNKNOWN: "unknown"
+};
+;// CONCATENATED MODULE: ./src/enums/profile-size.enum.js
+var PROFILE_SIZE = {
+  SMALL: "small",
+  NORMAL: "normal",
+  ALBUM: "album",
+  LARGE: "large",
+  SQUARE: "square"
 };
 ;// CONCATENATED MODULE: ./src/context/auth.context.js
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { auth_context_defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function auth_context_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function auth_context_slicedToArray(arr, i) { return auth_context_arrayWithHoles(arr) || auth_context_iterableToArrayLimit(arr, i) || auth_context_unsupportedIterableToArray(arr, i) || auth_context_nonIterableRest(); }
 
 function auth_context_nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -10900,7 +10935,16 @@ function auth_context_arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; 
 
 
 
+
 var AuthContext = /*#__PURE__*/(0,react.createContext)();
+var initUser = {
+  name: "",
+  id: "",
+  picture: {
+    data: {}
+  },
+  loaded: false
+};
 
 function AuthProvider(_ref) {
   var children = _ref.children;
@@ -10912,118 +10956,145 @@ function AuthProvider(_ref) {
 
   var _useState3 = (0,react.useState)({}),
       _useState4 = auth_context_slicedToArray(_useState3, 2),
-      loginState = _useState4[0],
-      setLoginState = _useState4[1]; // MOUNT
+      loginStatus = _useState4[0],
+      setLoginStatus = _useState4[1];
+
+  var _useState5 = (0,react.useState)(_objectSpread({}, initUser)),
+      _useState6 = auth_context_slicedToArray(_useState5, 2),
+      user = _useState6[0],
+      setUser = _useState6[1];
+
+  var setLoginAuthState = function setLoginAuthState(payload) {
+    if (payload) {
+      setLoginStatus(payload);
+      setIsAuth(function () {
+        return payload.status == STATUS.CONNECTED;
+      });
+    } else {
+      FB.getLoginStatus(function (response) {
+        setLoginStatus(response);
+        setIsAuth(function () {
+          return response.status == STATUS.CONNECTED;
+        });
+      });
+    }
+  }; // MOUNT
 
 
   (0,react.useEffect)(function () {
-    FB.getLoginStatus(function (response) {
-      console.log(response);
-      setLoginState(response);
+    setLoginAuthState();
+    FB.Event.subscribe("auth.statusChange", function (response) {
+      setLoginAuthState(response);
     });
   }, []);
   (0,react.useEffect)(function () {
-    if (loginState.status == STATUS.CONNECTED) setIsAuth(true);
-  }, [loginState]);
+    if (isAuth) {
+      FB.api("/me", {
+        access_token: FB.getAccessToken(),
+        scope: "name,id"
+      }, function (user) {
+        setUser(user);
+        FB.api("/me/picture", {
+          redirect: false,
+          type: PROFILE_SIZE.LARGE
+        }, function (picture) {
+          setUser(function (user) {
+            return _objectSpread(_objectSpread({}, user), {}, {
+              picture: picture
+            });
+          });
+        });
+      });
+    }
+  }, [isAuth]);
   return /*#__PURE__*/react.createElement(AuthContext.Provider, {
     value: {
       isAuth: isAuth,
-      loginState: loginState
+      loginStatus: loginStatus,
+      user: user
     }
   }, children);
 }
 
 /* harmony default export */ const auth_context = (AuthProvider);
-;// CONCATENATED MODULE: ./src/pages/Play.js
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+;// CONCATENATED MODULE: ./src/context/translate.context.js
+function translate_context_slicedToArray(arr, i) { return translate_context_arrayWithHoles(arr) || translate_context_iterableToArrayLimit(arr, i) || translate_context_unsupportedIterableToArray(arr, i) || translate_context_nonIterableRest(); }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { Play_defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function translate_context_nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function Play_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function translate_context_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return translate_context_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return translate_context_arrayLikeToArray(o, minLen); }
 
-function Play_slicedToArray(arr, i) { return Play_arrayWithHoles(arr) || Play_iterableToArrayLimit(arr, i) || Play_unsupportedIterableToArray(arr, i) || Play_nonIterableRest(); }
+function translate_context_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-function Play_nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function translate_context_iterableToArrayLimit(arr, i) { var _i = arr && (typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]); if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
-function Play_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return Play_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return Play_arrayLikeToArray(o, minLen); }
-
-function Play_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function Play_iterableToArrayLimit(arr, i) { var _i = arr && (typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]); if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function Play_arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+function translate_context_arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 
 
-
-var initUser = {
-  image: {},
-  loaded: false,
-  name: 1
+var TranslateContext = /*#__PURE__*/(0,react.createContext)();
+var LANGAUGES = {
+  km: __webpack_require__(787),
+  en: __webpack_require__(976)
 };
+var DEFAULT_LANG = LANG.KM;
+var langChangeSubscription = [];
 
-function Play() {
-  var _useState = (0,react.useState)(_objectSpread({}, initUser)),
-      _useState2 = Play_slicedToArray(_useState, 2),
-      user = _useState2[0],
-      setUser = _useState2[1];
+function TranslateProvider(_ref) {
+  var children = _ref.children;
 
-  var authcontext = (0,react.useContext)(AuthContext);
+  var _useState = (0,react.useState)(DEFAULT_LANG),
+      _useState2 = translate_context_slicedToArray(_useState, 2),
+      translate = _useState2[0],
+      setTranslate = _useState2[1];
 
-  var _useState3 = (0,react.useState)({}),
-      _useState4 = Play_slicedToArray(_useState3, 2),
-      auth = _useState4[0],
-      setAuth = _useState4[1];
+  var changeLang = function changeLang(lang) {
+    if (!(lang in LANGAUGES)) return;
+    setTranslate(lang);
+  };
+
+  var onLangChange = function onLangChange(callback) {
+    langChangeSubscription.push(callback);
+  };
 
   (0,react.useEffect)(function () {
-    console.log(authcontext);
-    FB.Event.subscribe("auth.statusChange", function (res) {
-      setAuth(res);
+    langChangeSubscription.forEach(function (callback) {
+      callback(translate);
     });
-    FB.Event.subscribe("auth.login", function (response) {
-      console.log(response, "login");
-    });
-    FB.Event.subscribe("auth.logout", function (response) {
-      console.log(response, "logout");
-    });
-  }, []);
+  }, [translate]);
+  return /*#__PURE__*/react.createElement(TranslateContext.Provider, {
+    value: {
+      translate: LANGAUGES[translate],
+      changeLang: changeLang,
+      langKey: translate,
+      onLangChange: onLangChange
+    }
+  }, children);
+}
 
-  var login = function login() {
-    FB.login(function (response) {
-      var userID = response.authResponse.userID;
-      var token = response.authResponse.accessToken;
-      FB.api('/' + userID, function (user) {
-        FB.api('/' + userID + "/picture", 'GET', {
-          redirect: false,
-          type: "large"
-        }, function (image) {
-          setUser(_objectSpread(_objectSpread({}, user), {}, {
-            image: image.data,
-            loaded: true
-          }));
-        });
-      });
-    });
-  };
+/* harmony default export */ const translate_context = (TranslateProvider);
+;// CONCATENATED MODULE: ./src/pages/Play.js
+
+
+
+
+
+
+function Play() {
+  var authContext = (0,react.useContext)(AuthContext);
+
+  var _useContext = (0,react.useContext)(TranslateContext),
+      translate = _useContext.translate,
+      changeLang = _useContext.changeLang,
+      langKey = _useContext.langKey,
+      onLangChange = _useContext.onLangChange;
 
   var canvasRef = (0,react.useRef)();
   (0,react.useEffect)(function () {
-    var canvas = canvasRef.current;
-    var context = canvas.getContext("2d");
-    context.fillStyle = "#000000";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    var userImage = new Image();
-    userImage.crossOrigin = "anonymous";
-    userImage.src = user.image.url;
-    userImage.addEventListener("load", function () {
-      context.drawImage(userImage, canvas.width / 2 - userImage.width / 2, canvas.height / 2 - userImage.height);
-      console.log(userImage);
+    onLangChange(function (lang) {
+      console.log(lang);
     });
-    context.fillStyle = "#FFFFFF";
-    context.font = "30px Arial";
-    context.textAlign = "center";
-    context.fillText(user.name, canvas.width / 2, canvas.height / 1.5);
-  }, [user]);
+  }, []);
 
   var share = function share() {
     canvasRef.current.toBlob(function (imageBlob) {
@@ -11049,19 +11120,29 @@ function Play() {
     ref: canvasRef,
     width: "700",
     height: "500"
-  }), !authcontext.isAuth && /*#__PURE__*/react.createElement(Button_Button, {
+  }), !authContext.isAuth && /*#__PURE__*/react.createElement(Button_Button, {
     color: "primary",
     variant: "contained",
-    onClick: login,
+    onClick: function onClick() {
+      return null;
+    },
     size: "medium",
     disableElevation: true
   }, "Login With Facebook"), /*#__PURE__*/react.createElement(Button_Button, {
-    color: "secondary",
+    color: "primary",
+    variant: "contained",
+    onClick: function onClick() {
+      return changeLang(langKey == LANG.KM ? LANG.EN : LANG.KM);
+    },
+    size: "medium",
+    disableElevation: true
+  }, translate.global.swicth_lang), /*#__PURE__*/react.createElement(Button_Button, {
+    color: "primary",
     variant: "contained",
     onClick: share,
     size: "medium",
     disableElevation: true
-  }, "Share To FaceBook"), /*#__PURE__*/react.createElement(Button_Button, {
+  }, translate.global.share_to_facebook), /*#__PURE__*/react.createElement(Button_Button, {
     color: "default",
     variant: "contained",
     onClick: function onClick() {
@@ -11071,7 +11152,7 @@ function Play() {
     },
     size: "medium",
     disableElevation: true
-  }, "GET AUTH"), /*#__PURE__*/react.createElement("pre", null, JSON.stringify(authcontext, null, 1)));
+  }, "GET AUTH"), /*#__PURE__*/react.createElement("pre", null, JSON.stringify(authContext, null, 1)));
 }
 
 /* harmony default export */ const pages_Play = (Play);
@@ -11080,10 +11161,12 @@ function Play() {
 
 
 
+
+
  // import FBProvider, { FBContext } from './context/fb.context';
 
 function App() {
-  return /*#__PURE__*/react.createElement(react.Fragment, null, /*#__PURE__*/react.createElement(auth_context, null, /*#__PURE__*/react.createElement(BrowserRouter, null, /*#__PURE__*/react.createElement(Switch, null, /*#__PURE__*/react.createElement(Route, {
+  return /*#__PURE__*/react.createElement(translate_context, null, /*#__PURE__*/react.createElement(auth_context, null, /*#__PURE__*/react.createElement(BrowserRouter, null, /*#__PURE__*/react.createElement(Switch, null, /*#__PURE__*/react.createElement(Route, {
     path: "/",
     component: pages_Index,
     exact: true
